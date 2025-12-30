@@ -5,6 +5,7 @@ import { Ground } from './Ground';
 import { Result } from './Result';
 import { Bird } from './Bird';
 import { PipePool } from './PipePool';
+import { BirdAudio } from './BirdAudio';
 
 @ccclass('GameCtrl')
 export class GameCtrl extends Component {
@@ -31,6 +32,11 @@ export class GameCtrl extends Component {
         tooltip: "Result is here"
     })
     public results : Result;
+
+    @property({
+        type: BirdAudio
+    })
+    public birdAudio: BirdAudio;
 
     @property({
         type: CCInteger
@@ -62,6 +68,7 @@ export class GameCtrl extends Component {
                 this.startGame();
             } else {
                 this.bird.fly();
+                this.birdAudio.onAudioQueue(0);
             }
         })
     }
@@ -78,6 +85,7 @@ export class GameCtrl extends Component {
     }
 
     gameOver(){
+        this.birdAudio.onAudioQueue(3);
         this.results.showResults();
         this.isGameOver = true;
         director.pause();
@@ -99,6 +107,7 @@ export class GameCtrl extends Component {
 
     passPipe(){
         this.results.addScore();
+        this.birdAudio.onAudioQueue(1);
     }
 
     contactGroundPipe(){
@@ -111,6 +120,8 @@ export class GameCtrl extends Component {
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null){
         this.bird.hitSomething = true;
+
+        this.birdAudio.onAudioQueue(2);
     }
 
     birdStruck(){
