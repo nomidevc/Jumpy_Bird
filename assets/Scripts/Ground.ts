@@ -33,7 +33,7 @@ export class Ground extends Component {
     public tempStartPosition2 = new Vec3;
     public tempStartPosition3 = new Vec3;
 
-    public gameCtrlSpeed : GameCtrl;
+    public gameCtrlSpeed = new GameCtrl;
     public gameSpeed : number;
 
     protected onLoad(): void {
