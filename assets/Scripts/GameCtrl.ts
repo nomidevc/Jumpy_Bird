@@ -1,4 +1,4 @@
-import { _decorator, CCInteger, Component, director, EventKeyboard, Input, input, KeyCode, Node } from 'cc';
+import { _decorator, CCInteger, Component, director, EventKeyboard, Input, input, KeyCode, Node, Collider2D, Contact2DType, IPhysics2DContact, game } from 'cc';
 const { ccclass, property } = _decorator;
 
 import { Ground } from './Ground';
@@ -42,36 +42,28 @@ export class GameCtrl extends Component {
     })
     public pipeSpeed : number = 200;
 
+    public isGameOver : boolean;
+
     protected onLoad(): void {
         this.initListener();
 
         this.results.resetScore();
 
+        this.isGameOver = true;
+
         director.pause();
     }
 
     initListener(){
-        input.on(Input.EventType.KEY_DOWN, this.onKeyDown, this);
-
         this.node.on(Node.EventType.TOUCH_START, () =>{
-            this.bird.fly();
-        })
-    }
-
-    onKeyDown(event: EventKeyboard){
-        switch(event.keyCode){
-
-            case KeyCode.KEY_A:
-                this.gameOver();
-            break;
-
-            case KeyCode.KEY_S:
-                this.results.addScore();
-            break;
-
-            case KeyCode.KEY_D:
+            if(this.isGameOver == true){
                 this.resetGame();
-        }
+                this.bird.resetBird();
+                this.startGame();
+            } else {
+                this.bird.fly();
+            }
+        })
     }
 
     startGame(){
@@ -79,8 +71,15 @@ export class GameCtrl extends Component {
         director.resume();
     }
 
+    protected update(dt: number): void {
+        if(this.isGameOver == false){
+            this.birdStruck();
+        }
+    }
+
     gameOver(){
         this.results.showResults();
+        this.isGameOver = true;
         director.pause();
     }
 
@@ -88,6 +87,8 @@ export class GameCtrl extends Component {
         this.results.resetScore();
         this.bird.resetBird();
         this.pipeQueue.reset();
+
+        this.isGameOver = false;
 
         this.startGame();
     }
@@ -98,6 +99,26 @@ export class GameCtrl extends Component {
 
     passPipe(){
         this.results.addScore();
+    }
+
+    contactGroundPipe(){
+        let collider = this.bird.getComponent(Collider2D);
+
+        if(collider){
+            collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+        }
+    }
+
+    onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D, contact: IPhysics2DContact | null){
+        this.bird.hitSomething = true;
+    }
+
+    birdStruck(){
+        this.contactGroundPipe();
+
+        if(this.bird.hitSomething){
+            this.gameOver();
+        }
     }
 
 }
